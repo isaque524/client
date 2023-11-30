@@ -1,8 +1,11 @@
+import { useContext } from "react";
 import {Alert, Button, Form, Row, Col, Stack} from "react-bootstrap";
+import { AuthContext } from "../context/AuthContext";
 
 const Register = () =>{
-    return (<>
-    <Form>
+ const {registerInfo, updateRegisterInfo, registerUser, registerError, isRegisterLoading } =  useContext(AuthContext);
+   return (<>
+    <Form onSubmit={registerUser}>
         <Row style={
             {
                 height: "100vh",
@@ -14,14 +17,16 @@ const Register = () =>{
             <Stack gap={3}>
                 <h2>Criar Conta</h2>
 
-                <Form.Control type="text" placeholder="Nome"/>
-                <Form.Control type="email" placeholder="Email"/>
-                <Form.Control type="password" placeholder="Senha"/>
+                <Form.Control required type="text" placeholder="Nome" onChange={(e) => updateRegisterInfo ({ ...registerInfo, name: e.target.value }) }  />
+                <Form.Control required type="email" placeholder="Email"  onChange={(e) => updateRegisterInfo ({ ...registerInfo, email: e.target.value }) }  />
+                <Form.Control required type="password" placeholder="Senha"  onChange={(e) => updateRegisterInfo ({ ...registerInfo, password: e.target.value }) }  />
            <Button variant="primary" type="submit" >
-            Cadastra
+            {isRegisterLoading? "Crie sua conta" : "Cadastre"}
            </Button>
 
-           <Alert variant="danger" >Ocorreu um erro.</Alert>
+           {
+            registerError?.error && <Alert variant="danger" ><p>{registerError?.message}</p></Alert>
+           }
             </Stack>
             </Col>
         </Row>
