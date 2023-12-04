@@ -22,10 +22,8 @@ export const ChatContextProvider = ({ children, user }) =>{
     const [allUsers, setAllUsers] = useState([])
   
 
-    console.log("notifications", notifications)
-
     useEffect(() => {
-        const newSocket = io("http://localhost:3000/");
+        const newSocket = io("chatsocket-lac.vercel.app");
         setSocket(newSocket);
 
         return() =>{
@@ -89,7 +87,7 @@ return () =>{
             const response = await getRequest(`${baseUrl}/users`);
 
             if(response.error) {
-                return console.log("Error fetching users", response);
+                return console.log("Error de users", response);
             }
 
             const pChats = response.filter((u) =>{

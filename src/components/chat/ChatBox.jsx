@@ -17,7 +17,6 @@ const ChatBox = () =>{
     const scroll = useRef();
 
 
-    console.log("text", textMessage )
 
     useEffect(() => {
         moment.locale('pt-br');
