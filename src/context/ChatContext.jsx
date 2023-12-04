@@ -18,9 +18,11 @@ export const ChatContextProvider = ({ children, user }) =>{
     const [newMessage, setNewMessage] = useState(null)
     const [socket, setSocket] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState([])
+    const [notifications, setNotifications] = useState([])
+    const [allUsers, setAllUsers] = useState([])
+  
 
-
-    console.log("onlineUsers", onlineUsers)
+    console.log("notifications", notifications)
 
     useEffect(() => {
         const newSocket = io("http://localhost:3000/");
@@ -43,7 +45,7 @@ export const ChatContextProvider = ({ children, user }) =>{
         };
      }, [socket]);
 
-     //send msg
+   
      useEffect(() =>{
         if(socket === null) return
 
@@ -53,18 +55,31 @@ export const ChatContextProvider = ({ children, user }) =>{
 
      }, [newMessage]);
 
-//receive message
+
 
 useEffect(() =>{
-    if(socket === null) return
+    if (socket === null) return;
 
-socket.on("getMessage", res =>{
+socket.on("getMessage", (res) => {
     if (currentChat?._id !== res.chatId) return;
 
     setMessages((prev) => [...prev, res]);
-})
+});
 
+    socket.on("getNotification", (res) =>{
+        const isChatOpen = currentChat?.members.some((id) => id === res.senderId);
 
+        if (isChatOpen){
+            setNotifications((prev) => [{ ...res, isRead: true}, ...prev]);
+        } else {
+            setNotifications((prev) => [res, ...prev]);
+        }
+    });
+
+return () =>{
+    socket.off("getMessage");
+    socket.off("getNotification");
+    };
  }, [socket, currentChat]);
 
 
@@ -89,7 +104,8 @@ socket.on("getMessage", res =>{
                 }
                 return !isChatCreated;
             });
-            setPotencialChats(pChats)
+            setPotencialChats(pChats);
+            setAllUsers(response)
         };
         getUsers();
     }, [userChats]);
@@ -171,6 +187,62 @@ socket.on("getMessage", res =>{
         setUserChats((prev) => [...prev, response]);
     }, [])
 
+    const markAllNotificationsAsRead = useCallback((notifications) => {
+        const mNofications = notifications.map((n) =>{
+            return {...n, isRead: true };
+        });
+
+        setNotifications(mNofications);
+    }, []);
+
+    const markNotificationAsRead = useCallback(
+        (n, userChats, user, notifications) =>{
+
+            const desiredChat = userChats.find((chat) =>{
+                const chatMembers = [user._id, n.senderId];
+                const isDesiredChat = chat?.members.every((member) =>{
+                    return chatMembers.includes(member);
+                });
+
+                return isDesiredChat
+            });
+
+            const mNotidications = notifications.map(el =>{
+                if (n.senderId === el.senderId) {
+                    return { ...n, isRead: true };
+                } else{
+                    return el;
+                }
+            });
+
+            updateCurrentChat(desiredChat);
+            setNotifications(mNotidications);
+        },
+        []
+    );
+
+    const markThisUserNotificationAsRead = useCallback(
+        (thisUserNotifications, notifications) => {
+
+            const mNotifications = notifications.map((el) =>{
+                let notification;
+
+                thisUserNotifications.forEach((n) =>{
+                    if (n.senderId === el.senderId) {
+                        notification = {...n, isRead: true };
+                    } else {
+                        notification = el
+                    }
+                });
+
+                return notification
+            });
+
+            setNotifications(mNotifications);
+        },
+        []
+    );
+
 
     return(
         <ChatContext.Provider 
@@ -187,6 +259,11 @@ socket.on("getMessage", res =>{
             messagesError,
             sendTextMessage,
             onlineUsers,
+            notifications,
+            allUsers,
+            markAllNotificationsAsRead,
+            markNotificationAsRead,
+            markThisUserNotificationAsRead,
         }}
         >{children}</ChatContext.Provider>
 
