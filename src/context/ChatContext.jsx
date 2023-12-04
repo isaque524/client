@@ -23,7 +23,7 @@ export const ChatContextProvider = ({ children, user }) =>{
   
 
     useEffect(() => {
-        const newSocket = io("chatsocket-lac.vercel.app");
+        const newSocket = io("https://chat-app-6bkb.onrender.com");
         setSocket(newSocket);
 
         return() =>{
