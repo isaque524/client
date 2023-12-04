@@ -3,7 +3,7 @@ import { ChatContext } from "../context/ChatContext";
 import {AuthContext} from "../context/AuthContext"
 import { Container, Stack } from "react-bootstrap";
 import UserChat from "../components/chat/UserChat";
-import PotencialChats from "../components/chat/potencialChats";
+import PotencialChats from "../components/chat/PotencialChats";
 import ChatBox from "../components/chat/ChatBox";
 
 
